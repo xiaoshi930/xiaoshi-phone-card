@@ -1,4 +1,4 @@
-# 消逝卡(移动端)
+# 消逝卡(手机端)
 ## 配置资源文件
 ~~~ 
 - url: /hacsfiles/xiaoshi-phone-card/xiaoshi-phone-card.js
