@@ -30,7 +30,7 @@ buttons:                                     ## 附加按钮：辅热、节能�
 type: custom:xiaoshi-phone-humidifier-card
 entity: humidifier.jiashiqi_keting
 select: select.jiashiqi_keting               ## 加湿器风机select实体
-timer: timer.ke_ting_kong_diao_ding_shi_qi   ## 辅助元素：定时器实体
+timer: timer.xxxxxxxxxxxx                    ## 辅助元素：定时器实体
 theme: on                                    ## 可选on、off、或者函数返回值如'[[[ return theme() ]]]'
 auto_show: false                             ## 当有此选项时，空调关闭时，卡片隐藏
 width: 100%                                  ## 卡片宽度，可省略，默认100%
@@ -44,18 +44,22 @@ buttons:                                     ## 附加按钮：辅热、节能�
 ## 功能3：净化器卡片
 **引用示例**
 ~~~
-type: custom:xiaoshi-phone-humidifier-card
-entity: humidifier.jiashiqi_keting
-select: select.jiashiqi_keting               ## 加湿器风机select实体
-timer: timer.ke_ting_kong_diao_ding_shi_qi   ## 辅助元素：定时器实体
+type: custom:xiaoshi-phone-purifier-card 
+entity: switch.jinghuaqi_keting              ## 净化器主实体fan或者switch
+select: select.jinghuaqi_keting              ## 如果是switch的主实体，这里选净化器模式
+number: number.jinghuaqi_keting              ## 最爱风速number实体
+pm25: sensor.jinghuaqi_pm25_keting           ## pm25传感器
+temperature: sensor.jinghuaqi_wendu_keting   ## 温度传感器
+humidity: sensor.jinghuaqi_shidu_keting      ## 湿度传感器
+timer: timer.xxxxxxxxxxxx                    ## 辅助元素：定时器实体
 theme: on                                    ## 可选on、off、或者函数返回值如'[[[ return theme() ]]]'
 auto_show: false                             ## 当有此选项时，空调关闭时，卡片隐藏
 width: 100%                                  ## 卡片宽度，可省略，默认100%
 buttons:                                     ## 附加按钮：辅热、节能、干燥、睡眠、提示音、指示灯等，没有可省略
-  - light.jiashiqi_light_keting              ## 没有可省略
-  - switch.jiashiqi_alarm_keting             ## 没有可省略
-  - sensor.jiashiqi_water_keting             ## 没有可省略
-  - sensor.jiashiqi_tank_keting              ## 没有可省略
+  - switch.jinghuaqi_alarm_keting            ## 没有可省略
+  - switch.jinghuaqi_locked_keting           ## 没有可省略
+  - select.jinghuaqi_light_keting            ## 没有可省略
+  - sensor.haocai_jinghuaqi_lvxin_keting     ## 没有可省略
 ~~~
 
 ## 功能4：电脑卡片
