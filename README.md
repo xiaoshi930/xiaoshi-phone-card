@@ -28,19 +28,17 @@ buttons:                                     ## 附加按钮：辅热、节能�
 **引用示例**
 ~~~
 type: custom:xiaoshi-phone-climate-card
-entity: climate.kongtiao_keting
-temperature: sensor.woshi_wendu              ## 额外温度实体，覆盖空调当前温度，用于空调实体没有【当前温度】情况
+entity: humidifier.jiashiqi_keting
+select: select.jiashiqi_keting               ## 加湿器风机select实体
 timer: timer.ke_ting_kong_diao_ding_shi_qi   ## 辅助元素：定时器实体
 theme: on                                    ## 可选on、off、或者函数返回值如'[[[ return theme() ]]]'
 auto_show: false                             ## 当有此选项时，空调关闭时，卡片隐藏
 width: 100%                                  ## 卡片宽度，可省略，默认100%
 buttons:                                     ## 附加按钮：辅热、节能、干燥、睡眠、提示音、指示灯等，没有可省略
-  - switch.kongtiao_dryer_keting             ## 没有可省略
-  - switch.kongtiao_eco_keting               ## 没有可省略
-  - switch.kongtiao_heater_keting            ## 没有可省略
-  - switch.kongtiao_sleep_keting             ## 没有可省略
-  - switch.kongtiao_alarm_keting             ## 没有可省略
-  - light.kongtiao_light_keting              ## 没有可省略
+  - light.jiashiqi_light_keting              ## 没有可省略
+  - switch.jiashiqi_alarm_keting             ## 没有可省略
+  - sensor.jiashiqi_water_keting             ## 没有可省略
+  - sensor.jiashiqi_tank_keting              ## 没有可省略
 ~~~
 
 ## 功能3：电脑卡片
