@@ -19,7 +19,7 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
   async _setDefaultClimateEntity() {
     if (this.config?.entity) return;
     const entities = Object.keys(this.hass.states).filter(
-      eid => eid.startsWith('climate.')
+      eid => eid.startsWith('climate.') || eid.startsWith('water_heater.')
     );
     
     if (entities.length > 0) {
@@ -61,7 +61,7 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
       <div class="card-config">
         <!-- 主实体选择 -->
         <div class="row">
-          <div class="label">空调实体 (必选)</div>
+          <div class="label">空调/水暖毯/热水器实体 (必选)</div>
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this.config?.entity || ''}
@@ -72,7 +72,7 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
             .disabled=${!this.hass}
           ></ha-entity-picker>
           ${!this.config?.entity ? html`
-            <div class="hint">正在加载可用空调...</div>
+            <div class="hint">正在加载可用空调/水暖毯/热水器...</div>
           ` : ''}
         </div>
 
@@ -139,6 +139,31 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
           ` : ''}
         </div>
 
+        <!-- 附加按钮2 -->
+        <div class="row">
+          <div class="label">附加按钮(第2排) (最多7个)</div>
+          ${(this.config.buttons2 || []).map((button2, index2) => html`
+            <ha-entity-picker
+              .hass=${this.hass}
+              .value=${button2}
+              @value-changed=${(ev2) => this._buttonChanged2(ev2, index2)}
+              .configValue=${'buttons2'}
+              allow-custom-entity
+            ></ha-entity-picker>
+          `)}
+          ${(!this.config.buttons2 || this.config.buttons2.length < 7) ? html`
+            <div class="buttons-row">
+              <mwc-button 
+                class="add-button" 
+                @click=${this._addButton2}
+                outlined
+              >
+                添加按钮(第2排)
+              </mwc-button>
+            </div>
+          ` : ''}
+        </div>
+
         <!-- 自动隐藏选项 -->
         <div class="row">
           <ha-switch
@@ -198,6 +223,24 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
 		this._fireEvent();
 	}
 
+	_buttonChanged2(ev2, index2) {
+		if (!this.config) return;  // 移除了 !ev.detail.value 检查，允许空值
+		const buttons2 = [...(this.config.buttons2 || [])];
+		
+		// 如果值为空，则删除该按钮
+		if (!ev2.detail.value) {
+			buttons2.splice(index2, 1);
+		} else {
+			buttons2[index2] = ev2.detail.value;
+		}
+		
+		this.config = { 
+			...this.config,
+			buttons2: buttons2.length > 0 ? buttons2 : undefined  // 如果按钮数组为空，则不保留空数组
+		};
+		this._fireEvent();
+	}
+
 	_addButton() {
 		const buttons = [...(this.config.buttons || [])];
 		if (buttons.length >= 7) return;
@@ -206,6 +249,18 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
 		this.config = { 
 			...this.config,
 			buttons 
+		};
+		this._fireEvent();
+	}
+
+	_addButton2() {
+		const buttons2 = [...(this.config.buttons2 || [])];
+		if (buttons2.length >= 7) return;
+		buttons2.push('');
+		
+		this.config = { 
+			...this.config,
+			buttons2
 		};
 		this._fireEvent();
 	}
@@ -287,6 +342,7 @@ export class XiaoshiPhoneClimateCard extends LitElement {
       timer: "",
       theme: "on",
       buttons: [],
+      buttons2: [],
       auto_show: false,
       width: "100%"
     };
@@ -295,6 +351,7 @@ export class XiaoshiPhoneClimateCard extends LitElement {
   setConfig(config) {
     this.config = config;
     this.buttons = config.buttons || [];
+    this.buttons2 = config.buttons2 || [];
     this.auto_show = config.auto_show || false;
     this._externalTempSensor = config.temperature || null;
     if (config.width !== undefined) this.width = config.width;
@@ -326,11 +383,13 @@ export class XiaoshiPhoneClimateCard extends LitElement {
             "icon fan fan "
             "icon swing swing"
             "icon preset preset"
+            "icon water water"
             "icon timer timer"
             "icon extra extra"
+            "icon extra2 extra2"
             "a a a"; 
         grid-template-columns: 25% 60% 13%;
-        grid-template-rows: auto auto auto auto auto auto auto 4px;
+        grid-template-rows: auto auto auto auto auto auto auto auto auto 4px;
       }
 
       .active-gradient {
@@ -473,7 +532,7 @@ export class XiaoshiPhoneClimateCard extends LitElement {
         to { transform: rotate(360deg); }
       }
 
-      .modes-area, .fan-area, .swing-area, .preset-area, .timer-area, .extra-area {
+      .modes-area, .fan-area, .swing-area, .preset-area, .water-area,.timer-area, .extra-area ,.extra2-area{
         display: flex;
         gap: 5px;
         width: 100%;
@@ -514,7 +573,17 @@ export class XiaoshiPhoneClimateCard extends LitElement {
       .preset-area::-webkit-scrollbar {
         display: none;
       }
+
+      .water-area {
+        grid-area: water;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
       
+      .water-area::-webkit-scrollbar {
+        display: none;
+      }
+
       .timer-area {
         grid-area: timer;
         display: grid;
@@ -556,7 +625,13 @@ export class XiaoshiPhoneClimateCard extends LitElement {
         display: grid;
         gap: 5px;
       }
-      
+
+      .extra2-area {
+        grid-area: extra2;
+        display: grid;
+        gap: 5px;
+      }
+
       .extra-button {
         display: flex;
         flex-direction: column;
@@ -704,6 +779,20 @@ export class XiaoshiPhoneClimateCard extends LitElement {
         white-space: nowrap;
       }
       
+      .water-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+      
+      .water-text {
+        font-size: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
       .active-mode {
         color: var(--active-color) !important;
       }
@@ -719,6 +808,7 @@ export class XiaoshiPhoneClimateCard extends LitElement {
     this.hass = {};
     this.config = {};
     this.buttons = [];
+    this.buttons2 = [];
     this.theme = 'on';
     this.width = '100%';
     this._timerInterval = null;
@@ -844,6 +934,12 @@ drawSmoothCurve() {
     let statusColor = theme === 'on' ? '#888888' : '#aaaaaa';
     if (state === 'cool') statusColor = '#2ba0f3';
     else if (state === 'heat') statusColor = '#fe6f21';
+    else if (state === '自定义') statusColor = '#fe6f21';
+    else if (state === 'AI控温') statusColor = '#fe6f21';
+    else if (state === '婴童洗') statusColor = '#fe6f21';
+    else if (state === '舒适洗') statusColor = '#fe6f21';
+    else if (state === '宠物洗') statusColor = '#fe6f21';
+    else if (state === '厨房通') statusColor = '#fe6f21';
     else if (state === 'dry') statusColor = '#ff9700';
     else if (state === 'fan' || state === 'fan_only') statusColor = '#00bcd5';
     else if (state === 'auto') statusColor = '#ee82ee';
@@ -1030,6 +1126,12 @@ drawSmoothCurve() {
     let statusColor = 'rgb(250,250,250)';
     if (state === 'cool') statusColor = 'rgb(33,150,243)';
     else if (state === 'heat') statusColor = 'rgb(254,111,33)';
+    else if (state === '自定义') statusColor = '#fe6f21';
+    else if (state === 'AI控温') statusColor = '#fe6f21';
+    else if (state === '婴童洗') statusColor = '#fe6f21';
+    else if (state === '舒适洗') statusColor = '#fe6f21';
+    else if (state === '宠物洗') statusColor = '#fe6f21';
+    else if (state === '厨房通') statusColor = '#fe6f21';
     else if (state === 'dry') statusColor = 'rgb(255,151,0)';
     else if (state === 'fan' || state === 'fan_only') statusColor = 'rgb(0,188,213)';
     else if (state === 'auto') statusColor = 'rgb(147,112,219)'
@@ -1051,9 +1153,11 @@ drawSmoothCurve() {
     const hasFanModes = attrs.fan_modes && attrs.fan_modes.length > 0;
     const hasSwingModes = attrs.swing_modes && attrs.swing_modes.length > 0;
     const hasPresetModes = attrs.preset_modes && attrs.preset_modes.length > 0;
+    const hasWaterModes = attrs.operation_list && attrs.operation_list.length > 0;
     const hasTimer = this.config.timer;
     const timerEntity = hasTimer ? this.hass.states[this.config.timer] : null;
     const hasExtra = this.buttons && this.buttons.length > 0;
+    const hasExtra2 = this.buttons2 && this.buttons2.length > 0;
     
     const gridTemplateRows = [
         'auto',
@@ -1061,8 +1165,10 @@ drawSmoothCurve() {
         hasFanModes ? 'auto' : '0',
         hasSwingModes ? 'auto' : '0',
         hasPresetModes ? 'auto' : '0',
+        hasWaterModes ? 'auto' : '0',
         hasTimer ? 'auto' : '0',
-        hasExtra ? 'auto' : '0'
+        hasExtra ? 'auto' : '0',
+        hasExtra2 ? 'auto' : '0'
     ].join(' ');
 
     const fanModes = attrs.fan_modes || [];
@@ -1081,6 +1187,8 @@ drawSmoothCurve() {
     }
     const buttonCount = Math.min(this.buttons.length, 7); 
     const gridColumns = buttonCount <= 6 ? 6 : 7;
+    const buttonCount2 = Math.min(this.buttons2.length, 7); 
+    const gridColumns2 = buttonCount2 <= 6 ? 6 : 7;
 
     return html` 
       <div class="card" style=" margin-bottom: ${marginBottom};
@@ -1148,6 +1256,12 @@ drawSmoothCurve() {
                   ${this._renderPresetButtons(attrs.preset_modes, attrs.preset_mode)}
               </div>
           ` : ''}
+           
+          ${hasWaterModes ? html`
+              <div class="water-area">
+                  ${this._renderWaterButtons(attrs.operation_list, attrs.operation_mode)}
+              </div>
+          ` : ''}
 
           ${hasTimer ? html`
               <div class="timer-area">
@@ -1157,7 +1271,13 @@ drawSmoothCurve() {
 
           ${hasExtra ? html`
               <div class="extra-area" style="grid-template-columns: repeat(${gridColumns}, 1fr);">
-                  ${this._renderExtraButtons()}
+                  ${this._renderExtraButtons(1)}
+              </div>
+          ` : ''}
+
+          ${hasExtra2 ? html`
+              <div class="extra2-area" style="grid-template-columns: repeat(${gridColumns2}, 1fr);">
+                  ${this._renderExtraButtons(2)}
               </div>
           ` : ''}
         </div>
@@ -1199,6 +1319,12 @@ drawSmoothCurve() {
     let activeColor = 'rgb(255,255,255)';
     if (climateState === 'cool') activeColor = 'rgb(33,150,243)';
     else if (climateState === 'heat') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '自定义') activeColor = 'rgb(254,111,33)';
+    else if (climateState === 'AI控温') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '婴童洗') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '舒适洗') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '宠物洗') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '厨房通') activeColor = 'rgb(254,111,33)';
     else if (climateState === 'dry') activeColor = 'rgb(255,151,0)';
     else if (climateState === 'fan' || climateState === 'fan_only') activeColor = 'rgb(0,188,213)';
     else if (climateState === 'auto') activeColor = 'rgb(147,112,219)';
@@ -1324,10 +1450,11 @@ drawSmoothCurve() {
   }
 
 
-_renderExtraButtons() {
-    if (!this.buttons || this.buttons.length === 0) return html``;
+_renderExtraButtons(buttonType = 1) {
+    const buttonArray = buttonType === 1 ? this.buttons : this.buttons2;
+    if (!buttonArray || buttonArray.length === 0) return html``;
 
-    const buttonsToShow = this.buttons.slice(0, 7);
+    const buttonsToShow = buttonArray.slice(0, 7);
     const entity = this.hass.states[this.config.entity];
     if (!entity) {
         return html`<div>实体未找到: ${this.config.entity}</div>`;
@@ -1339,6 +1466,12 @@ _renderExtraButtons() {
     let activeColor = theme === 'on' ? 'rgba(00, 80, 80)' : 'rgba(180, 230, 230)';
     if (state === 'cool') activeColor = 'rgb(33,150,243)';
     else if (state === 'heat') activeColor = 'rgb(254,111,33)';
+    else if (state === '自定义') activeColor = 'rgb(254,111,33)';
+    else if (state === 'AI控温') activeColor = 'rgb(254,111,33)';
+    else if (state === '婴童洗') activeColor = 'rgb(254,111,33)';
+    else if (state === '舒适洗') activeColor = 'rgb(254,111,33)';
+    else if (state === '宠物洗') activeColor = 'rgb(254,111,33)';
+    else if (state === '厨房通') activeColor = 'rgb(254,111,33)';
     else if (state === 'dry') activeColor = 'rgb(255,151,0)';
     else if (state === 'fan' || state === 'fan_only') activeColor = 'rgb(0,188,213)';
     else if (state === 'auto') activeColor = 'rgb(147,112,219)';
@@ -1508,6 +1641,18 @@ _renderExtraButtons() {
       return presetIcons[mode] || '';
   }
 
+  _getWatertIcon(mode) {
+    const waterIcons = {
+        '自定义': 'mdi:pencil',
+        'AI控温': 'mdi:water-boiler-auto',
+        '婴童洗': 'mdi:human-child',
+        '舒适洗': 'mdi:hand-heart',
+        '宠物洗': 'mdi:cat',
+        '厨房通': 'mdi:countertop'
+    };
+    return waterIcons[mode] || 'mdi:water-boiler';
+  }
+
   _renderModeButtons(modes, currentMode) {
       if (!modes) return html``;
       
@@ -1609,6 +1754,26 @@ _renderExtraButtons() {
           `;
       });
   }
+  
+  _renderWaterButtons(operation_list, operation_mode) {
+    if (!operation_list) return html``;
+    
+    return operation_list.map(mode => {
+        const isActive = mode === operation_mode;
+        return html`
+            <button 
+                class="mode-button ${isActive ? 'active-mode' : ''}" 
+                @click=${() => this._setWaterMode(mode)}
+                style="color: ${isActive ? 'var(--active-color)' : ''}"
+            >
+                <div class="water-button">
+                    <ha-icon class="icon" icon="${this._getWaterIcon(mode)}" style="color: ${isActive ? 'var(--active-color)' : ''}"></ha-icon>
+                    <span class="water-text">${this._translateWaterMode(mode)}</span>
+                </div>
+            </button>
+        `;
+    });
+  }
 
   _translateMode(mode) {
       const translations = {
@@ -1663,6 +1828,18 @@ _renderExtraButtons() {
     const translations = {
         '普通': '\u00A0\u00A0普通',
         '除螨': '\u00A0\u00A0除螨',
+    };
+    return translations[mode] || mode;
+  }
+
+  _translateWaterMode(mode) {
+    const translations = {
+        '自定义': '\u00A0\u00A0自定义',
+        'AI控温': '\u00A0\u00A0AI控温',
+        '婴童洗': '\u00A0\u00A0婴童洗',
+        '舒适洗': '\u00A0\u00A0舒适洗',
+        '宠物洗': '\u00A0\u00A0宠物洗',
+        '厨房通': '\u00A0\u00A0厨房通',
     };
     return translations[mode] || mode;
   }
@@ -1723,6 +1900,14 @@ _renderExtraButtons() {
           preset_mode: mode
       });
       this._handleClick();
+  }
+
+  _setWaterMode(mode) {
+    this._callService('water_heater', 'set_operation_mode', {
+        entity_id: this.config.entity,
+        operation_mode: mode
+    });
+    this._handleClick();
   }
 
   _callService(domain, service, data) {
