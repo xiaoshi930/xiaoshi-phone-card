@@ -5,7 +5,7 @@
   type: module
 ~~~
 
-## 功能1：空调卡片
+## 功能1：空调/水暖毯/热水器卡片
 **引用示例**
 ~~~
 type: custom:xiaoshi-phone-climate-card
