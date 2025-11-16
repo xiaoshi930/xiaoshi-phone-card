@@ -1,8 +1,9 @@
-console.info("%c 消逝卡-移动端 \n%c      v 0.0.1 ", "color: red; font-weight: bold; background: black", "color: white; font-weight: bold; background: black");
+console.info("%c 消逝卡-移动端 \n%c      v 0.0.2 ", "color: red; font-weight: bold; background: black", "color: white; font-weight: bold; background: black");
 
 const loadCards = async () => {
     await import('./xiaoshi-phone-climate-card.js');
     await import('./xiaoshi-phone-humidifier-card.js');
+    await import('./xiaoshi-phone-purifier-card.js');
     await import('./xiaoshi-phone-computer-card.js');
     await import('./xiaoshi-phone-light-card.js');
     await import('./xiaoshi-phone-switch-card.js');
@@ -25,6 +26,12 @@ const cardConfigs = [
     type: 'xiaoshi-phone-humidifier-card',
     name: '消逝卡(移动端)-加湿器卡',
     description: '移动端加湿器卡',
+    preview: true
+  },
+  {
+    type: 'xiaoshi-phone-purifier-card',
+    name: '消逝卡(移动端)-净化器卡',
+    description: '移动端净化器卡',
     preview: true
   },
   {
