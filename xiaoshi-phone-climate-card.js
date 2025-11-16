@@ -13,7 +13,17 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
   }
 
   async firstUpdated() {
-    await this._setDefaultClimateEntity();
+    // 等待hass对象完全加载后再设置默认实体
+    if (this.hass && Object.keys(this.hass.states).length > 0) {
+      await this._setDefaultClimateEntity();
+    }
+  }
+
+  updated(changedProperties) {
+    // 当hass对象更新时，重新检查实体选择器
+    if (changedProperties.has('hass') && this.hass && Object.keys(this.hass.states).length > 0) {
+      this._setDefaultClimateEntity();
+    }
   }
 
   async _setDefaultClimateEntity() {
@@ -55,7 +65,7 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
   }
 
   render() {
-    if (!this.hass) return html``;
+    if (!this.hass || !this.hass.states) return html`<div>正在加载Home Assistant数据...</div>`;
 
     return html`
       <div class="card-config">
@@ -69,9 +79,11 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
             @value-changed=${this._valueChanged}
             .configValue=${'entity'}
             allow-custom-entity
-            .disabled=${!this.hass}
+            .disabled=${!this.hass || !this.hass.states}
           ></ha-entity-picker>
-          ${!this.config?.entity ? html`
+          ${!this.hass || !this.hass.states ? html`
+            <div class="hint">正在加载Home Assistant数据...</div>
+          ` : !this.config?.entity ? html`
             <div class="hint">正在加载可用空调...</div>
           ` : ''}
         </div>
