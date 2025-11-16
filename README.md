@@ -27,7 +27,7 @@ buttons:                                     ## 附加按钮：辅热、节能�
 ## 功能2：加湿器卡片
 **引用示例**
 ~~~
-type: custom:xiaoshi-phone-climate-card
+type: custom:xiaoshi-phone-humidifier-card
 entity: humidifier.jiashiqi_keting
 select: select.jiashiqi_keting               ## 加湿器风机select实体
 timer: timer.ke_ting_kong_diao_ding_shi_qi   ## 辅助元素：定时器实体
