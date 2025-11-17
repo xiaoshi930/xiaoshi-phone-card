@@ -1,4 +1,4 @@
-console.info("%c 消逝卡-移动端 \n%c      v 0.0.4 ", "color: red; font-weight: bold; background: black", "color: white; font-weight: bold; background: black");
+console.info("%c 消逝卡-移动端 \n%c      v 0.0.5 ", "color: red; font-weight: bold; background: black", "color: white; font-weight: bold; background: black");
 
 const loadCards = async () => {
     await import('./xiaoshi-phone-climate-card.js');
