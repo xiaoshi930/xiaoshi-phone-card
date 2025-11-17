@@ -22,6 +22,13 @@ buttons:                                     ## 附加按钮：辅热、节能�
   - switch.kongtiao_sleep_keting             ## 没有可省略
   - switch.kongtiao_alarm_keting             ## 没有可省略
   - light.kongtiao_light_keting              ## 没有可省略
+buttons2:                                    ## 附加按钮第2排：辅热、节能、干燥、睡眠、提示音、指示灯等，没有可省略
+  - switch.kongtiao_dryer_keting             ## 没有可省略
+  - switch.kongtiao_eco_keting               ## 没有可省略
+  - switch.kongtiao_heater_keting            ## 没有可省略
+  - switch.kongtiao_sleep_keting             ## 没有可省略
+  - switch.kongtiao_alarm_keting             ## 没有可省略
+  - light.kongtiao_light_keting              ## 没有可省略
 ~~~
 
 ## 功能2：加湿器卡片
