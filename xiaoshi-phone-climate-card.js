@@ -65,7 +65,7 @@ class XiaoshiPhoneClimateCardEditor extends LitElement {
           <ha-entity-picker
             .hass=${this.hass}
             .value=${this.config?.entity || ''}
-            .includeDomains=${['climate']}
+            .includeDomains=${['climate','water_heater']}
             @value-changed=${this._valueChanged}
             .configValue=${'entity'}
             allow-custom-entity
@@ -787,7 +787,7 @@ export class XiaoshiPhoneClimateCard extends LitElement {
       }
       
       .water-text {
-        font-size: 10px;
+        font-size: 8px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -939,7 +939,7 @@ drawSmoothCurve() {
     else if (state === '婴童洗') statusColor = '#fe6f21';
     else if (state === '舒适洗') statusColor = '#fe6f21';
     else if (state === '宠物洗') statusColor = '#fe6f21';
-    else if (state === '厨房通') statusColor = '#fe6f21';
+    else if (state === '厨房用') statusColor = '#fe6f21';
     else if (state === 'dry') statusColor = '#ff9700';
     else if (state === 'fan' || state === 'fan_only') statusColor = '#00bcd5';
     else if (state === 'auto') statusColor = '#ee82ee';
@@ -1131,7 +1131,7 @@ drawSmoothCurve() {
     else if (state === '婴童洗') statusColor = '#fe6f21';
     else if (state === '舒适洗') statusColor = '#fe6f21';
     else if (state === '宠物洗') statusColor = '#fe6f21';
-    else if (state === '厨房通') statusColor = '#fe6f21';
+    else if (state === '厨房用') statusColor = '#fe6f21';
     else if (state === 'dry') statusColor = 'rgb(255,151,0)';
     else if (state === 'fan' || state === 'fan_only') statusColor = 'rgb(0,188,213)';
     else if (state === 'auto') statusColor = 'rgb(147,112,219)'
@@ -1150,6 +1150,7 @@ drawSmoothCurve() {
     };
     const translatedState = stateTranslations[state] || state;
 
+    const hasHvacModes = attrs.hvac_modes && attrs.hvac_modes.length > 0;
     const hasFanModes = attrs.fan_modes && attrs.fan_modes.length > 0;
     const hasSwingModes = attrs.swing_modes && attrs.swing_modes.length > 0;
     const hasPresetModes = attrs.preset_modes && attrs.preset_modes.length > 0;
@@ -1161,7 +1162,7 @@ drawSmoothCurve() {
     
     const gridTemplateRows = [
         'auto',
-        'auto',
+        hasHvacModes ? 'auto' : '0',
         hasFanModes ? 'auto' : '0',
         hasSwingModes ? 'auto' : '0',
         hasPresetModes ? 'auto' : '0',
@@ -1234,11 +1235,12 @@ drawSmoothCurve() {
                             ></ha-icon>
                         </div>
                     </div>
-    
-          <div class="modes-area">
-              ${this._renderModeButtons(attrs.hvac_modes, state)}
-          </div>
-          
+          ${hasHvacModes ? html`
+              <div class="modes-area">
+                  ${this._renderModeButtons(attrs.hvac_modes, state)}
+              </div>
+          ` : ''}
+
           ${hasFanModes ? html`
               <div class="fan-area">
                   ${this._renderFanButtons(attrs.fan_modes, attrs.fan_mode)}
@@ -1324,7 +1326,7 @@ drawSmoothCurve() {
     else if (climateState === '婴童洗') activeColor = 'rgb(254,111,33)';
     else if (climateState === '舒适洗') activeColor = 'rgb(254,111,33)';
     else if (climateState === '宠物洗') activeColor = 'rgb(254,111,33)';
-    else if (climateState === '厨房通') activeColor = 'rgb(254,111,33)';
+    else if (climateState === '厨房用') activeColor = 'rgb(254,111,33)';
     else if (climateState === 'dry') activeColor = 'rgb(255,151,0)';
     else if (climateState === 'fan' || climateState === 'fan_only') activeColor = 'rgb(0,188,213)';
     else if (climateState === 'auto') activeColor = 'rgb(147,112,219)';
@@ -1471,7 +1473,7 @@ _renderExtraButtons(buttonType = 1) {
     else if (state === '婴童洗') activeColor = 'rgb(254,111,33)';
     else if (state === '舒适洗') activeColor = 'rgb(254,111,33)';
     else if (state === '宠物洗') activeColor = 'rgb(254,111,33)';
-    else if (state === '厨房通') activeColor = 'rgb(254,111,33)';
+    else if (state === '厨房用') activeColor = 'rgb(254,111,33)';
     else if (state === 'dry') activeColor = 'rgb(255,151,0)';
     else if (state === 'fan' || state === 'fan_only') activeColor = 'rgb(0,188,213)';
     else if (state === 'auto') activeColor = 'rgb(147,112,219)';
@@ -1586,19 +1588,47 @@ _renderExtraButtons(buttonType = 1) {
       const entity = this.hass.states[this.config.entity];
       if (!entity) return;
       
-      const currentTemp = entity.attributes.temperature;
-      const step = entity.attributes.target_temp_step || 1;
+      // 检查实体类型
+      const entityId = this.config.entity;
+      const isClimate = entityId.startsWith('climate.');
+      const isWaterHeater = entityId.startsWith('water_heater.');
       
+      if (!isClimate && !isWaterHeater) {
+          console.warn('不支持的实体类型:', entityId);
+          return;
+      }
+      
+      // 获取当前温度和步长
+      let currentTemp, step;
+      currentTemp = entity.attributes.temperature;
+      step = entity.attributes.target_temp_step || 1;
+      
+      if (currentTemp === undefined || currentTemp === null) {
+          console.warn('无法获取当前温度');
+          return;
+      }
+      
+      // 计算新温度
       let newTemp = currentTemp;
       if (direction === 'up') {
           newTemp += step;
       } else {
           newTemp -= step;
       }
-      this._callService('climate', 'set_temperature', {
-          entity_id: this.config.entity,
-          temperature: newTemp
-      });
+      
+      // 调用相应的服务
+      if (isClimate) {
+          this._callService('climate', 'set_temperature', {
+              entity_id: this.config.entity,
+              temperature: newTemp
+          });
+      } else if (isWaterHeater) {
+          this._callService('water_heater', 'set_temperature', {
+              entity_id: this.config.entity,
+              temperature: newTemp
+          });
+      }
+      
       this._handleClick();
   }
 
@@ -1641,16 +1671,16 @@ _renderExtraButtons(buttonType = 1) {
       return presetIcons[mode] || '';
   }
 
-  _getWatertIcon(mode) {
+  _getWaterIcon(mode) {
     const waterIcons = {
         '自定义': 'mdi:pencil',
         'AI控温': 'mdi:water-boiler-auto',
         '婴童洗': 'mdi:human-child',
         '舒适洗': 'mdi:hand-heart',
         '宠物洗': 'mdi:cat',
-        '厨房通': 'mdi:countertop'
+        '厨房用': 'mdi:countertop'
     };
-    return waterIcons[mode] || 'mdi:water-boiler';
+    return '';
   }
 
   _renderModeButtons(modes, currentMode) {
@@ -1839,7 +1869,7 @@ _renderExtraButtons(buttonType = 1) {
         '婴童洗': '\u00A0\u00A0婴童洗',
         '舒适洗': '\u00A0\u00A0舒适洗',
         '宠物洗': '\u00A0\u00A0宠物洗',
-        '厨房通': '\u00A0\u00A0厨房通',
+        '厨房用': '\u00A0\u00A0厨房用',
     };
     return translations[mode] || mode;
   }
@@ -1847,27 +1877,69 @@ _renderExtraButtons(buttonType = 1) {
   _turnOffClimate() {
     if (!this.config.entity) return;
     
-    this._callService('climate', 'turn_off', {
-        entity_id: this.config.entity
-    });
+    // 检查实体类型
+    const entityId = this.config.entity;
+    const isClimate = entityId.startsWith('climate.');
+    const isWaterHeater = entityId.startsWith('water_heater.');
+    
+    if (!isClimate && !isWaterHeater) {
+        console.warn('不支持的实体类型:', entityId);
+        return;
+    }
+    
+    // 根据实体类型调用相应的服务
+    if (isClimate) {
+        this._callService('climate', 'turn_off', {
+            entity_id: this.config.entity
+        });
+    } else if (isWaterHeater) {
+        this._callService('water_heater', 'turn_off', {
+            entity_id: this.config.entity
+        });
+    }
+    
     this._handleClick();
   }
 
   _togglePower() {
       const entity = this.hass.states[this.config.entity];
-      if (entity.state === 'off') {
-          this._callService('climate', 'turn_on', {
-              entity_id: this.config.entity
-          });
-          this._handleClick();
-      } else {
-          this._callService('climate', 'turn_off', {
-              entity_id: this.config.entity
-          });
-        this._cancelTimer();
-        this._handleClick();
+      if (!entity) return;
+      
+      // 检查实体类型
+      const entityId = this.config.entity;
+      const isClimate = entityId.startsWith('climate.');
+      const isWaterHeater = entityId.startsWith('water_heater.');
+      
+      if (!isClimate && !isWaterHeater) {
+          console.warn('不支持的实体类型:', entityId);
+          return;
       }
       
+      // 根据实体类型调用相应的服务
+      if (entity.state === 'off') {
+          if (isClimate) {
+              this._callService('climate', 'turn_on', {
+                  entity_id: this.config.entity
+              });
+          } else if (isWaterHeater) {
+              this._callService('water_heater', 'turn_on', {
+                  entity_id: this.config.entity
+              });
+          }
+          this._handleClick();
+      } else {
+          if (isClimate) {
+              this._callService('climate', 'turn_off', {
+                  entity_id: this.config.entity
+              });
+          } else if (isWaterHeater) {
+              this._callService('water_heater', 'turn_off', {
+                  entity_id: this.config.entity
+              });
+          }
+          this._cancelTimer();
+          this._handleClick();
+      }
   }
 
   _setHvacMode(mode) {
