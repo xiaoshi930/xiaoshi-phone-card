@@ -784,13 +784,25 @@ export class XiaoshiPhoneClimateCard extends LitElement {
         align-items: center;
         justify-content: center;
         width: 100%;
+        padding: 0;
+        margin: 0;
       }
       
       .water-text {
+        display: block;
         font-size: 8px;
         overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        line-height: 1;
       }
       
       .active-mode {
@@ -1675,7 +1687,7 @@ _renderExtraButtons(buttonType = 1) {
     const waterIcons = {
         '自定义': 'mdi:pencil',
         'AI控温': 'mdi:water-boiler-auto',
-        '婴童洗': 'mdi:human-child',
+        '婴童洗': 'mdi:human-baby-changing-table',
         '舒适洗': 'mdi:hand-heart',
         '宠物洗': 'mdi:cat',
         '厨房用': 'mdi:countertop'
@@ -1797,8 +1809,7 @@ _renderExtraButtons(buttonType = 1) {
                 style="color: ${isActive ? 'var(--active-color)' : ''}"
             >
                 <div class="water-button">
-                    <ha-icon class="icon" icon="${this._getWaterIcon(mode)}" style="color: ${isActive ? 'var(--active-color)' : ''}"></ha-icon>
-                    <span class="water-text">${this._translateWaterMode(mode)}</span>
+                    <span class="water-text">${mode}</span>
                 </div>
             </button>
         `;
@@ -1858,18 +1869,6 @@ _renderExtraButtons(buttonType = 1) {
     const translations = {
         '普通': '\u00A0\u00A0普通',
         '除螨': '\u00A0\u00A0除螨',
-    };
-    return translations[mode] || mode;
-  }
-
-  _translateWaterMode(mode) {
-    const translations = {
-        '自定义': '\u00A0\u00A0自定义',
-        'AI控温': '\u00A0\u00A0AI控温',
-        '婴童洗': '\u00A0\u00A0婴童洗',
-        '舒适洗': '\u00A0\u00A0舒适洗',
-        '宠物洗': '\u00A0\u00A0宠物洗',
-        '厨房用': '\u00A0\u00A0厨房用',
     };
     return translations[mode] || mode;
   }
