@@ -29,10 +29,10 @@ export class XiaoshiPhoneComputerCard extends LitElement {
               display: grid; 
               height: 100%;
               grid-template-areas: 
-                  "name status power"
-                  "icon rings rings"
-                  "a a a"; 
-              grid-template-columns: 20% 65% 13%;
+                  "name b status power"
+                  "icon b rings rings"
+                  "a b c c"; 
+              grid-template-columns: 16% 4% 68% 10%;
               grid-template-rows: auto auto 4px;
           }
           
@@ -148,9 +148,9 @@ export class XiaoshiPhoneComputerCard extends LitElement {
           }
           
           .main-icon {
-                  --mdc-icon-size: 35px;
+                  --mdc-icon-size: 40px;
                   margin-top: -3px;
-                  transition: transform 0.3s ease;
+                  transition: transform 0.5s ease;
           }
 
           .active-main-icon {
